@@ -16,6 +16,7 @@ function getVideo(contract, pos){
   return contract.methods.all(pos)
     .call()
     .then(result => ({
+      "id": pos,
       "creator": result[0],
       "title": result[1], 
       "ipfsLoc": result[2]
@@ -37,6 +38,7 @@ function getAllVideos(contract){
 // Hyperapp Configuration:
 const state = {
   manifest: new web3.eth.Contract(contractConfig,"0xE059272c6DAA50850D209f9683Eb18bA1320D241"),
+  currentVideo: null,
   videos: []
 }
 
@@ -51,6 +53,17 @@ const actions = {
   fetchVideos: () => (state, actions) => {
     getAllVideos(state.manifest).then(actions.updateVideos)
     return state 
+  },
+  updateCurrentVideo: (video) => (state) => ({
+    ...state,
+    currentVideo: video
+  }),
+  recieveVideo: (id) => (state, actions) => {
+    getVideo(state.manifest, id).then((video) => {
+      console.log(video)
+      actions.updateCurrentVideo(video)
+    })
+    return state 
   }
 }
 
@@ -58,7 +71,13 @@ const prefix = getRoutePrefix()
 const view = (state, actions) => {
   return (
     <main oncreate={actions.fetchVideos}>
-       <Route path={`${prefix}/video:id`} render={() => <Video/>} />
+       <Route path={`${prefix}/video/:id`} render = { ({match}) =>
+          <Video 
+            onVideo={actions.recieveVideo}
+            vid={state.currentVideo} 
+            match={match}
+           />
+       }/>
        <Route path={`${prefix}/`} render={() => <Home videos={state.videos} />} />
     </main>
   )

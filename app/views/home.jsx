@@ -8,7 +8,7 @@ const Home = ({videos}) => {
         const target = `${getRoutePrefix()}/video` //${vid.target}`
         return (
             <li> 
-                <Link to ={target}>{vid.title}</Link>
+                <Link to = {`video/${vid.id}`}>{vid.title}</Link>
             </li>
         )
     })
